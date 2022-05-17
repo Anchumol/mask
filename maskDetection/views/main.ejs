@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Mask detection</title>
+    <link href="css/style.css" rel="stylesheet">
+   
+</head>
+<body   style="background-image: url('images/arti.jpg');">
+
+
+    <div class="topnav">
+        <a class="active" href="/">logOut</a>
+        
+      </div>
+      <div id="error_msg"></div>
+   
+      
+      <div style="padding-left:16px">
+        <h2>Top Navigation Example</h2>
+        <p>Some content..</p>
+      </div>
+
+    
+      <div>
+
+      </div>
+    
+
+<div class="train-images"></div>
+
+<img id="test-img" crossorigin="anonymous" src="http://localhost:4040/images/upload_images/<%= user %>" >
+
+<!-- Load TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!-- Load MobileNet -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<!-- Load KNN Classifier -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+<script>
+    window.onload = async () => {
+        const maskImageCount = 5;
+        const noMaskImageCount = 6;
+    
+        const trainImagesContainer = document.querySelector('.train-images');
+
+        // Add mask images to the DOM and give them a class of `mask-img`
+        for (let i = 1; i <= maskImageCount; i++) {
+            const newImage = document.createElement('IMG');
+            newImage.setAttribute('crossorigin', `anonymous`);
+            newImage.setAttribute('src', `images/mask/${i}.jpg`);
+            newImage.classList.add('mask-img');
+            trainImagesContainer.appendChild(newImage);
+        }
+        
+        // Add no mask images to the DOM and give them a class of `no-mask-img`
+        for (let i = 1; i <= noMaskImageCount; i++) {
+            const newImage = document.createElement('IMG');
+            newImage.setAttribute('crossorigin', `anonymous`);
+            newImage.setAttribute('src', `images/no_mask/${i}.jpg`);
+            newImage.classList.add('no-mask-img');
+            trainImagesContainer.appendChild(newImage);
+        }
+    
+        // Load mobilenet module
+        const mobilenetModule = await mobilenet.load({version: 2, alpha: 1});
+        // Add examples to the KNN Classifier
+        const classifier = await trainClassifier(mobilenetModule);
+    
+        // Predict class for the test image
+        const testImage = document.getElementById('test-img');
+        const tfTestImage = tf.browser.fromPixels(testImage);
+        const logits = mobilenetModule.infer(tfTestImage, 'conv_preds');
+        const prediction = await classifier.predictClass(logits);
+
+        //top Message
+        var error = document.getElementById('error_msg');
+       
+        var text;
+        error.style.padding = "10px";
+    
+    
+        // Add a border to the test image to display the prediction result
+        if (prediction.label == 1) { // no mask - red border
+            testImage.classList.add('no-mask');
+
+            text ="No Mask Detected";
+            error.innerHTML = text;
+        } else { // has mask - green border
+            testImage.classList.add('mask');
+            text =" Mask Detected";
+            error.innerHTML = text;
+            
+        }
+    };
+    
+    async function trainClassifier(mobilenetModule) {
+        // Create a new KNN Classifier
+        const classifier = knnClassifier.create();
+    
+        // Train using mask images
+        const maskImages = document.querySelectorAll('.mask-img');
+        maskImages.forEach(img => {
+            const tfImg = tf.browser.fromPixels(img);
+            const logits = mobilenetModule.infer(tfImg, 'conv_preds');
+            classifier.addExample(logits, 0); // has mask
+        });
+        // Train using no mask images
+        const noMaskImages = document.querySelectorAll('.no-mask-img');
+        noMaskImages.forEach(img => {
+            const tfImg = tf.browser.fromPixels(img);
+            const logits = mobilenetModule.infer(tfImg, 'conv_preds');
+            classifier.addExample(logits, 1); // no mask
+        });
+    
+        return classifier;
+    }
+    
+</script>
+<div>
+    
+
+    </div>
+
+
+</body>
+<div>
+   
+</div>
+</html>

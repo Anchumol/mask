@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script src="js/tfjs.min.js"></script>
+</head>
+
+<body onresize="windowResized()">
+  <a><img id="imgHeader" src=images/aLIF.png height="110px"></a>
+  <h1 class='title'>Face Mask Detection TensorFlow.js</h1>
+  <h1 class='title'>Make people face mask recognition run in your local browser</h1>
+  <a href="webcam.html"><button id="button1">Test with webcam</button></a>
+  <div id="container">
+    <img src="images/demo.jpg" id="image" style="display: none;" class="center">
+    <div id="text-container">
+      <p id="instruction" class="green-color">
+        <button id="uploader-btn" onClick="clickUploader()">add image</button>
+      <p class="green-color "> drag the picture here 📂,  and the result will be displayed below</p>
+
+      <p id="warning" class="result-color"></p>
+      <p class="result-color">
+        The test results are as follows：
+      </p>
+      <input name="imgFile" type="file" id="fileUploader" accept="image/*" onChange="handleFiles()">
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
+  <script src="js/detection.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
